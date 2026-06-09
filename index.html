@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Competitor Campaign Monitor</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f6f8;color:#111;min-height:100vh}
+a{color:inherit;text-decoration:none}
+
+/* Layout */
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px}
+
+/* Header */
+.header{margin-bottom:24px}
+.header-meta{font-size:11px;color:#999;text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:6px}
+.header-title{font-size:28px;font-weight:900;color:#111;margin-bottom:8px}
+.header-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.week-badge{font-size:13px;color:#555}
+.updated-badge{font-size:11px;background:#D1FAE5;color:#065F46;border-radius:20px;padding:3px 12px;font-weight:700}
+.stale-badge{font-size:11px;background:#FEF3C7;color:#92400E;border-radius:20px;padding:3px 12px;font-weight:700}
+
+/* Competitor cards */
+.comp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.comp-card{border-radius:12px;padding:16px;cursor:pointer;border:2.5px solid #e0e0e0;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06);transition:all .15s}
+.comp-card:hover{border-color:#bbb}
+.comp-card.active-tv{border-color:#0A9AF2;background:#E6F5FE;box-shadow:0 4px 20px rgba(10,154,242,.18)}
+.comp-card.active-tr{border-color:#1DA462;background:#E0F7EE;box-shadow:0 4px 20px rgba(29,164,98,.18)}
+.comp-card.active-kk{border-color:#FF6B35;background:#FFF0EB;box-shadow:0 4px 20px rgba(255,107,53,.18)}
+.comp-name{font-size:15px;font-weight:800;color:#222;margin-bottom:12px}
+.comp-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:rgba(255,255,255,.55);border-radius:6px;padding:7px 10px}
+.stat-label{font-size:10px;color:#999;font-weight:700}
+.stat-val{font-size:18px;font-weight:800}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;background:#fff;padding:5px;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.06);width:fit-content;margin-bottom:16px}
+.tab{font-size:12px;padding:8px 18px;border-radius:8px;border:none;background:transparent;color:#666;cursor:pointer;font-weight:500;transition:all .15s}
+.tab.active{color:#fff;font-weight:800}
+
+/* Campaign sections */
+.cat-section{border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.07);margin-bottom:16px}
+.cat-header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;cursor:pointer}
+.cat-header-left{display:flex;align-items:center;gap:10px}
+.cat-icon{font-size:18px}
+.cat-label{font-size:13px;font-weight:800;color:#fff}
+.cat-badge{font-size:11px;background:rgba(255,255,255,.2);color:#fff;border-radius:20px;padding:2px 10px;font-weight:700}
+.cat-toggle{color:rgba(255,255,255,.7);font-size:12px}
+.cat-body{background:#fff;border-width:2px;border-style:solid;border-top:none;border-radius:0 0 12px 12px}
+
+.camp-row{border-bottom:1px solid #f0f0f0;cursor:pointer}
+.camp-row:last-child{border-bottom:none}
+.camp-row-main{display:flex;align-items:center;gap:10px;padding:11px 16px;background:#fff;transition:background .1s}
+.camp-row-main:hover{background:#fafafa}
+.camp-row-main.open{background:#fafafa}
+.camp-info{flex:1;min-width:0}
+.camp-name-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:3px}
+.camp-name{font-size:13px;font-weight:700;color:#111}
+.camp-dates{font-size:11px;color:#999}
+.camp-promo-short{font-size:11px;color:#666;text-align:right;max-width:200px;line-height:1.4}
+.camp-toggle{font-size:11px;color:#bbb;margin-left:6px}
+
+.camp-detail{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 14px;background:#fafafa}
+.detail-card{background:#fff;border:1px solid #eee;border-radius:8px;padding:11px 13px}
+.detail-label{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;font-weight:700}
+.detail-text{font-size:12px;color:#333;line-height:1.7}
+.promo-pill{font-size:11px;padding:5px 9px;margin-bottom:4px;background:#FFFBEB;color:#92400E;border-radius:5px;border:1px solid #FDE68A}
+
+/* Type chips */
+.chip{font-size:10px;border-radius:20px;padding:2px 9px;font-weight:700;white-space:nowrap}
+.chip-sale{background:#FEE2E2;color:#991B1B}
+.chip-destination{background:#DBEAFE;color:#1E40AF}
+.chip-domestic{background:#D1FAE5;color:#065F46}
+.chip-event{background:#EDE9FE;color:#5B21B6}
+.chip-flash{background:#FEF3C7;color:#92400E}
+.chip-partnership{background:#F3E8FF;color:#6B21A8}
+.chip-flights{background:#E0F2FE;color:#0C4A6E}
+.chip-verified{background:#D1FAE5;color:#065F46}
+
+/* Calendar */
+.cal-table{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:12px}
+.cal-head{display:grid;grid-template-columns:90px 1fr 1fr 1fr;background:#111}
+.cal-head-cell{padding:12px 14px;font-size:12px;font-weight:800;color:#fff}
+.cal-head-cell:first-child{color:#666}
+.cal-row{display:grid;grid-template-columns:90px 1fr 1fr 1fr;border-bottom:1px solid #f0f0f0}
+.cal-row:last-child{border-bottom:none}
+.cal-day{padding:13px 14px;background:#fafafa;border-right:1px solid #f0f0f0}
+.cal-day-name{font-size:14px;font-weight:900;color:#222}
+.cal-day-date{font-size:11px;color:#aaa;margin-top:2px}
+.cal-cell{padding:11px 13px;border-left:1px solid #f0f0f0;font-size:11px;line-height:1.5}
+.cal-cell.empty{color:#ddd;font-style:italic}
+.cal-alert{background:#FEF2F2;border:1.5px solid #FCA5A5;border-radius:10px;padding:10px 14px;font-size:12px;color:#991B1B;font-weight:600}
+
+/* Insights */
+.insights-card{background:#fff;border-radius:12px;padding:18px 20px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.insights-title{font-size:14px;font-weight:800;color:#111;margin-bottom:14px}
+.insight-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #f5f5f5}
+.insight-row:last-child{border-bottom:none}
+.insight-icon{font-size:16px;flex-shrink:0}
+.insight-text{font-size:13px;color:#333;line-height:1.65}
+
+/* Footer */
+.footer{margin-top:20px;padding:12px 0;border-top:1px solid #e8e8e8;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.footer-text{font-size:11px;color:#bbb}
+
+/* Loading / Error */
+.loading{text-align:center;padding:60px;color:#888;font-size:15px}
+.error{text-align:center;padding:60px;color:#991B1B;font-size:14px}
+
+@media(max-width:600px){
+  .comp-grid{grid-template-columns:1fr}
+  .camp-detail{grid-template-columns:1fr}
+  .cal-head,.cal-row{grid-template-columns:60px 1fr 1fr 1fr}
+  .header-title{font-size:22px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="app"><div class="loading">⏳ Loading competitor data…</div></div>
+</div>
+
+<script>
+const COMP_COLORS = {
+  traveloka:{ hex:"#0A9AF2", dark:"#064E80", activeClass:"active-tv" },
+  tripcom:  { hex:"#1DA462", dark:"#0A5C35", activeClass:"active-tr" },
+  kkday:    { hex:"#FF6B35", dark:"#B83E0E", activeClass:"active-kk" },
+};
+const COMP_LABELS = { traveloka:"🔵 Traveloka", tripcom:"🟢 Trip.com", kkday:"🔴 KKday" };
+const CAT_DEF = [
+  { key:"destination", label:"🌏 Destination campaigns", bg:"#1E3A8A" },
+  { key:"partnership", label:"🤝 Partnership & payment",  bg:"#581C87" },
+  { key:"flights",     label:"✈️ Flights & transport",    bg:"#0C4A6E" },
+];
+const ICONS = ["🔥","📅","🌏","🤝","⚡"];
+
+let DATA         = null;
+let selectedComp = "traveloka";
+let selectedTab  = "campaigns";
+let openCats     = { destination:true, partnership:true, flights:true };
+let openRows     = {};
+
+function chipClass(type){ return "chip chip-"+(type||"destination"); }
+function chipLabel(type){
+  return {sale:"Sale",destination:"Destination",domestic:"Domestic",event:"Event",flash:"Flash deal",partnership:"Partnership",flights:"Flights"}[type]||type;
+}
+
+function renderApp(data) {
+  const app   = document.getElementById("app");
+  const comp  = data[selectedComp] || {};
+  const color = COMP_COLORS[selectedComp];
+
+  const totalAll = ["traveloka","tripcom","kkday"].reduce((s,c)=>{
+    const d=data[c]||{};
+    return s+(d.destination?.length||0)+(d.partnership?.length||0)+(d.flights?.length||0);
+  },0);
+
+  // Freshness
+  const genAt   = new Date(data.generated_at_iso || Date.now());
+  const ageDays = (Date.now()-genAt.getTime())/(1000*60*60*24);
+  const freshBadge = ageDays < 2
+    ? `<span class="updated-badge">✓ Updated ${data.generated_at}</span>`
+    : `<span class="stale-badge">⚠ Last updated ${data.generated_at}</span>`;
+
+  app.innerHTML = `
+    <!-- Header -->
+    <div class="header">
+      <div class="header-meta">Competitor Intelligence · Malaysia</div>
+      <h1 class="header-title">Competitor Campaign Monitor</h1>
+      <div class="header-row">
+        <span class="week-badge">${data.week} &nbsp;·&nbsp; ${totalAll} campaigns tracked</span>
+        ${freshBadge}
+      </div>
+    </div>
+
+    <!-- Competitor cards -->
+    <div class="comp-grid">
+      ${["traveloka","tripcom","kkday"].map(cId => {
+        const d     = data[cId]||{};
+        const total = (d.destination?.length||0)+(d.partnership?.length||0)+(d.flights?.length||0);
+        const col   = COMP_COLORS[cId];
+        const act   = cId===selectedComp ? col.activeClass : "";
+        return `
+        <div class="comp-card ${act}" onclick="selectComp('${cId}')">
+          <div class="comp-name" style="color:${cId===selectedComp?col.dark:"#222"}">${COMP_LABELS[cId]}</div>
+          <div class="comp-stats">
+            ${[["Total",total],["🌏",d.destination?.length||0],["🤝",d.partnership?.length||0],["✈️",d.flights?.length||0]].map(([l,v])=>`
+            <div class="stat">
+              <div class="stat-label">${l}</div>
+              <div class="stat-val" style="color:${cId===selectedComp?col.dark:"#333"}">${v}</div>
+            </div>`).join("")}
+          </div>
+        </div>`;
+      }).join("")}
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      ${[["campaigns","📋 Campaigns"],["calendar","📅 Flash calendar"],["insights","⚡ Key insights"]].map(([v,l])=>`
+      <button class="tab${selectedTab===v?" active":""}" style="${selectedTab===v?"background:"+color.hex:""}" onclick="selectTab('${v}')">${l}</button>`).join("")}
+    </div>
+
+    <!-- Content -->
+    <div id="tab-content">${renderTab(data)}</div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <span class="footer-text">📸 Screenshot-verified · traveloka.com/en-my · my.trip.com · kkday.com/en-my</span>
+      <span class="footer-text">Auto-updated every Monday 08:00 MYT via GitHub Actions</span>
+    </div>
+  `;
+}
+
+function renderTab(data) {
+  if (selectedTab === "campaigns") return renderCampaigns(data);
+  if (selectedTab === "calendar")  return renderCalendar(data);
+  if (selectedTab === "insights")  return renderInsights(data);
+  return "";
+}
+
+function renderCampaigns(data) {
+  const d = data[selectedComp] || {};
+  const color = COMP_COLORS[selectedComp];
+  return CAT_DEF.map(cat => {
+    const items = d[cat.key] || [];
+    if (!items.length) return "";
+    const isOpen = openCats[cat.key] !== false;
+    const verified = items.filter(i=>i.verified).length;
+    return `
+    <div class="cat-section">
+      <div class="cat-header" style="background:${cat.bg}" onclick="toggleCat('${cat.key}')">
+        <div class="cat-header-left">
+          <span class="cat-icon">${cat.label.split(" ")[0]}</span>
+          <span class="cat-label">${cat.label.slice(cat.label.indexOf(" ")+1)}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="cat-badge">${items.length} campaigns</span>
+          <span class="cat-badge">📸 ${verified}</span>
+          <span class="cat-toggle">${isOpen?"▴":"▾"}</span>
+        </div>
+      </div>
+      ${isOpen ? `
+      <div class="cat-body" style="border-color:${cat.bg}">
+        ${items.map((c,i)=>{
+          const rowId = selectedComp+"_"+cat.key+"_"+i;
+          const isRowOpen = openRows[rowId];
+          const promoShort = (c.promo||"").split("·")[0].trim() + ((c.promo||"").includes("·")?"…":"");
+          return `
+          <div class="camp-row">
+            <div class="camp-row-main${isRowOpen?" open":""}" onclick="toggleRow('${rowId}')">
+              <div class="camp-info">
+                <div class="camp-name-row">
+                  <span class="camp-name">${c.name||"—"}</span>
+                  <span class="${chipClass(c.type)}">${chipLabel(c.type)}</span>
+                  ${c.verified?`<span class="chip chip-verified">📸 Verified</span>`:""}
+                </div>
+                <div class="camp-dates">${c.dates||""}</div>
+              </div>
+              <div class="camp-promo-short">${promoShort}</div>
+              <span class="camp-toggle">${isRowOpen?"▴":"▾"}</span>
+            </div>
+            ${isRowOpen?`
+            <div class="camp-detail">
+              <div class="detail-card">
+                <div class="detail-label">What they ran</div>
+                <div class="detail-text">${c.detail||c.promo||"—"}</div>
+              </div>
+              <div class="detail-card">
+                <div class="detail-label">Offers & promos</div>
+                ${(c.promo||"").split("·").map(p=>`<div class="promo-pill">🏷️ ${p.trim()}</div>`).join("")}
+              </div>
+            </div>`:""}
+          </div>`;
+        }).join("")}
+      </div>`:""}
+    </div>`;
+  }).join("");
+}
+
+function renderCalendar(data) {
+  const cal = data.calendar || [];
+  if (!cal.length) return `<div class="error">No calendar data available.</div>`;
+  return `
+  <div class="cal-table">
+    <div class="cal-head">
+      <div class="cal-head-cell"></div>
+      <div class="cal-head-cell">🔵 Traveloka</div>
+      <div class="cal-head-cell">🟢 Trip.com</div>
+      <div class="cal-head-cell">🔴 KKday</div>
+    </div>
+    ${cal.map(row=>{
+      const tvBg = row.tv_type ? getTypeBg(row.tv_type) : "";
+      const trBg = row.tr_type ? getTypeBg(row.tr_type) : "";
+      const kkBg = row.kk_type ? getTypeBg(row.kk_type) : "";
+      return `
+      <div class="cal-row">
+        <div class="cal-day">
+          <div class="cal-day-name">${row.day}</div>
+          <div class="cal-day-date">${row.date||""}</div>
+        </div>
+        <div class="cal-cell" style="background:${tvBg}">${row.tv||`<span class="empty">—</span>`}${row.tv&&row.tv_type?` <span class="${chipClass(row.tv_type)}">${chipLabel(row.tv_type)}</span>`:""}</div>
+        <div class="cal-cell" style="background:${trBg}">${row.tr||`<span class="empty">—</span>`}${row.tr&&row.tr_type?` <span class="${chipClass(row.tr_type)}">${chipLabel(row.tr_type)}</span>`:""}</div>
+        <div class="cal-cell" style="background:${kkBg}">${row.kk||`<span class="empty">—</span>`}${row.kk&&row.kk_type?` <span class="${chipClass(row.kk_type)}">${chipLabel(row.kk_type)}</span>`:""}</div>
+      </div>`;
+    }).join("")}
+  </div>
+  <div class="cal-alert">🚨 ${data.calendar_note||"Traveloka 7/7 · Trip.com 4/7 · KKday 4/7"}</div>`;
+}
+
+function getTypeBg(type){
+  return {sale:"#FEE2E244",destination:"#DBEAFE44",domestic:"#D1FAE544",event:"#EDE9FE44",flash:"#FEF3C744",partnership:"#F3E8FF44",flights:"#E0F2FE44"}[type]||"";
+}
+
+function renderInsights(data) {
+  const insights = data.insights || [];
+  return `
+  <div class="insights-card">
+    <div class="insights-title">⚡ Key insights — ${data.week}</div>
+    ${insights.map((ins,i)=>`
+    <div class="insight-row">
+      <span class="insight-icon">${ICONS[i]||"•"}</span>
+      <span class="insight-text">${ins}</span>
+    </div>`).join("")}
+  </div>`;
+}
+
+function selectComp(id) {
+  selectedComp = id;
+  openRows = {};
+  renderApp(DATA);
+}
+
+function selectTab(tab) {
+  selectedTab = tab;
+  renderApp(DATA);
+}
+
+function toggleCat(key) {
+  openCats[key] = openCats[key] === false ? true : false;
+  document.getElementById("tab-content").innerHTML = renderTab(DATA);
+}
+
+function toggleRow(rowId) {
+  openRows[rowId] = !openRows[rowId];
+  document.getElementById("tab-content").innerHTML = renderTab(DATA);
+}
+
+// Load data
+async function init() {
+  try {
+    const res = await fetch("./data.json?t=" + Date.now());
+    if (!res.ok) throw new Error("data.json not found");
+    DATA = await res.json();
+    renderApp(DATA);
+  } catch(e) {
+    document.getElementById("app").innerHTML = `
+      <div class="error">
+        <div style="font-size:32px;margin-bottom:12px">⚠️</div>
+        <div style="font-weight:700;margin-bottom:8px">Could not load data.json</div>
+        <div style="color:#666;font-size:13px">Run the GitHub Actions workflow once to generate the data file, then re-open this page.</div>
+      </div>`;
+  }
+}
+
+init();
+</script>
+</body>
+</html>
