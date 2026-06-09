@@ -4,7 +4,6 @@
 
 const nodemailer   = require("nodemailer");
 const cheerio      = require("cheerio");
-const { chromium } = require("playwright");
 const fs           = require("fs");
 const path         = require("path");
 
@@ -45,7 +44,7 @@ const CONFIG = {
         "https://www.kkday.com/en-my/hot-campaigns",
       ],
       label: "KKday",
-      useBrowser: true,
+      useJina: true,
     },
   },
 };
@@ -118,26 +117,22 @@ async function fetchPage(url) {
   return $("body").text().replace(/\s+/g, " ").trim().slice(0, 10000);
 }
 
-// ─── Browser fetch (KKday SPA) ────────────────────────────────────────────────
-async function fetchWithBrowser(url) {
-  console.log(`    🌐 Browser: ${url}`);
-  const browser = await chromium.launch({ headless: true });
-  try {
-    const ctx  = await browser.newContext({
-      userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-      locale: "en-MY", viewport: { width: 1280, height: 800 },
-    });
-    const page = await ctx.newPage();
-    await page.route("**/*.{png,jpg,jpeg,gif,webp,svg,woff,woff2,ttf}", r => r.abort());
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45000 });
-    await page.waitForTimeout(6000);
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight * 0.6));
-    await page.waitForTimeout(2000);
-    const text = await page.evaluate(() => document.body.innerText);
-    return text.replace(/\s+/g, " ").trim().slice(0, 12000);
-  } finally {
-    await browser.close();
-  }
+// ─── Jina AI Reader (handles JS-rendered SPAs like KKday) ───────────────────
+// Free, no API key needed — renders JavaScript fully via r.jina.ai
+async function fetchWithJina(url) {
+  console.log(`    🔍 Jina: ${url}`);
+  const jinaUrl = `https://r.jina.ai/${url}`;
+  const res = await fetch(jinaUrl, {
+    headers: {
+      "Accept":          "text/plain",
+      "X-Return-Format": "text",
+      "X-Locale":        "en-MY",
+    },
+    signal: AbortSignal.timeout(30000),
+  });
+  if (!res.ok) throw new Error(`Jina ${res.status}`);
+  const text = await res.text();
+  return text.slice(0, 12000);
 }
 
 // ─── Groq ─────────────────────────────────────────────────────────────────────
@@ -158,12 +153,12 @@ async function callGroq(prompt, maxTokens = 3000) {
 // ─── Scrape ───────────────────────────────────────────────────────────────────
 async function scrapeCompetitor(name, cfg) {
   console.log(`  Fetching ${name} (browser=${cfg.useBrowser})…`);
-  const fetchFn = cfg.useBrowser ? fetchWithBrowser : fetchPage;
+  const fetchFn = cfg.useJina ? fetchWithJina : fetchPage;
   const pages = [];
   for (const url of cfg.urls) {
     try { pages.push(await fetchFn(url)); }
     catch(e) { console.warn(`    ⚠ ${url}: ${e.message}`); }
-    if (cfg.useBrowser) await sleep(2000);
+    if (cfg.useJina) await sleep(1000);
   }
   const text = pages.join("\n\n---\n\n").slice(0, 14000);
   if (!text.trim()) {
@@ -213,10 +208,25 @@ Rules:
   try {
     const result = parseJSON(await callGroq(prompt));
     const total  = (result.destination?.length||0)+(result.partnership?.length||0)+(result.flights?.length||0);
+    if (total === 0 && cfg.useJina) { console.warn(`  ⚠ Jina got 0 campaigns for ${name}, check URL`);
+    }
     console.log(`  ✓ ${name}: ${total} campaigns`);
     return result;
   } catch(e) {
     console.error(`  ✗ ${name}: ${e.message}`);
+    return { destination: [], partnership: [], flights: [] };
+  }
+}
+
+function loadStaticFallback(name, filePath) {
+  try {
+    const raw  = fs.readFileSync(path.join(__dirname, filePath), "utf8");
+    const data = JSON.parse(raw);
+    const total = (data.destination?.length||0)+(data.partnership?.length||0)+(data.flights?.length||0);
+    console.log(`  ✓ ${name}: ${total} campaigns from static file`);
+    return data;
+  } catch(e) {
+    console.error(`  ✗ Static fallback failed: ${e.message}`);
     return { destination: [], partnership: [], flights: [] };
   }
 }
