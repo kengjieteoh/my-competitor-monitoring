@@ -2,8 +2,8 @@ name: Klook Competitor Monitor
 
 on:
   schedule:
-    - cron: '0 0 * * 1'   # Every Monday 00:00 UTC = 08:00 MYT
-  workflow_dispatch:        # Manual trigger anytime from GitHub UI
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
 
 jobs:
   run-report:
@@ -17,11 +17,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: '24'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Run competitor report
         env:
