@@ -1,13 +1,16 @@
 {
   "name": "klook-competitor-monitor",
   "version": "1.0.0",
-  "description": "Weekly competitor intelligence — Traveloka, Trip.com, KKday",
+  "description": "Weekly competitor intelligence \u2014 Traveloka, Trip.com, KKday",
   "main": "scraper.js",
-  "scripts": { "start": "node scraper.js" },
+  "scripts": {
+    "start": "node scraper.js"
+  },
   "dependencies": {
     "cheerio": "^1.0.0",
-    "nodemailer": "^6.9.14",
-    "playwright": "^1.44.0"
+    "nodemailer": "^6.9.14"
   },
-  "engines": { "node": ">=18" }
+  "engines": {
+    "node": ">=18"
+  }
 }
