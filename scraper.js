@@ -14,7 +14,7 @@ const CONFIG = {
   gmailPass:     process.env.GMAIL_APP_PASSWORD,
   recipient:     process.env.RECIPIENT_EMAIL || "kengjie.teoh@klook.com",
   sheetsWebhook: process.env.SHEETS_WEBAPP_URL,
-  groqModel:     "llama-3.3-70b-versatile",
+  groqModel:     "llama-3.1-8b-instant",
   competitors: {
     traveloka: {
       urls: [
