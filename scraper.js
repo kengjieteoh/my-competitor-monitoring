@@ -14,7 +14,7 @@ const CONFIG = {
   gmailPass:     process.env.GMAIL_APP_PASSWORD,
   recipient:     process.env.RECIPIENT_EMAIL || "kengjie.teoh@klook.com",
   sheetsWebhook: process.env.SHEETS_WEBAPP_URL,
-  groqModel:     "llama-3.1-8b-instant",
+  groqModel:     "llama-3.3-70b-versatile",
   competitors: {
     traveloka: {
       urls: [
@@ -114,7 +114,7 @@ async function fetchPage(url) {
   const $    = cheerio.load(html);
   $("script,style,noscript,nav,footer,header,iframe,svg").remove();
   $("[class*='cookie'],[class*='popup'],[class*='modal'],[id*='cookie']").remove();
-  return $("body").text().replace(/\s+/g, " ").trim().slice(0, 10000);
+  return $("body").text().replace(/\s+/g, " ").trim().slice(0, 5000);
 }
 
 // ─── Jina AI Reader (handles JS-rendered SPAs like KKday) ───────────────────
@@ -132,7 +132,7 @@ async function fetchWithJina(url) {
   });
   if (!res.ok) throw new Error(`Jina ${res.status}`);
   const text = await res.text();
-  return text.slice(0, 12000);
+  return text.slice(0, 5000);
 }
 
 // ─── Groq ─────────────────────────────────────────────────────────────────────
@@ -160,7 +160,7 @@ async function scrapeCompetitor(name, cfg) {
     catch(e) { console.warn(`    ⚠ ${url}: ${e.message}`); }
     if (cfg.useJina) await sleep(1000);
   }
-  const text = pages.join("\n\n---\n\n").slice(0, 14000);
+  const text = pages.join("\n\n---\n\n").slice(0, 8000);
   if (!text.trim()) {
     console.warn(`  ⚠ No content for ${name}`);
     return { destination: [], partnership: [], flights: [] };
@@ -567,12 +567,12 @@ async function main() {
 
   // 1. Scrape
   console.log("Step 1 — Scraping");
-  const [traveloka, tripcom] = await Promise.all([
-    scrapeCompetitor("traveloka", CONFIG.competitors.traveloka),
-    scrapeCompetitor("tripcom",   CONFIG.competitors.tripcom),
-  ]);
-  await sleep(1000);
+  const traveloka = await scrapeCompetitor("traveloka", CONFIG.competitors.traveloka);
+  await sleep(20000);
+  const tripcom = await scrapeCompetitor("tripcom", CONFIG.competitors.tripcom);
+  await sleep(20000);
   const kkday = await scrapeCompetitor("kkday", CONFIG.competitors.kkday);
+  await sleep(10000);
   const allData = { traveloka, tripcom, kkday };
 
   // 2. Insights
