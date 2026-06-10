@@ -45,6 +45,7 @@ const CONFIG = {
       ],
       label: "KKday",
       useJina: true,
+      staticFallback: "data/kkday.json",
     },
   },
 };
@@ -208,12 +209,12 @@ Rules:
   try {
     const result = parseJSON(await callGroq(prompt));
     const total  = (result.destination?.length||0)+(result.partnership?.length||0)+(result.flights?.length||0);
-    if (total === 0 && cfg.useJina) { console.warn(`  ⚠ Jina got 0 campaigns for ${name}, check URL`);
-    }
+    if (total === 0 && cfg.staticFallback) return loadStaticFallback(name, cfg.staticFallback);
     console.log(`  ✓ ${name}: ${total} campaigns`);
     return result;
   } catch(e) {
     console.error(`  ✗ ${name}: ${e.message}`);
+    if (cfg.staticFallback) return loadStaticFallback(name, cfg.staticFallback);
     return { destination: [], partnership: [], flights: [] };
   }
 }
