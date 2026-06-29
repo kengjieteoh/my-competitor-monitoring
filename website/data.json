@@ -1,0 +1,310 @@
+{
+  "week": "W27 · 29 Jun–5 Jul 2026",
+  "generated_at": "Mon, 29 Jun 2026, 11:32 am MYT",
+  "generated_at_iso": "2026-06-29T03:32:06.708Z",
+  "traveloka": {
+    "destination": [
+      {
+        "name": "Raya Sale",
+        "dates_start": "Ongoing",
+        "dates_end": "Ongoing",
+        "type": "sale",
+        "mechanics": [
+          "Exclusive discounts on flights, hotels, and activities",
+          "Up to 50% off on selected travel products",
+          "Limited time offer"
+        ],
+        "voucher_mechanics": [
+          {
+            "code": "No code",
+            "description": "Auto-applied at checkout"
+          }
+        ],
+        "products_focus": [
+          "Flights",
+          "Hotels",
+          "Activities"
+        ],
+        "campaign_url": "https://www.traveloka.com/en-my/promotions",
+        "promo": "Exclusive Raya Sale: Up to 50% off on flights, hotels, and activities",
+        "detail": "Limited time offer, auto-applied at checkout",
+        "verified": true
+      },
+      {
+        "name": "Traveloka First Time User Promo Code",
+        "dates_start": "Ongoing",
+        "dates_end": "Ongoing",
+        "type": "partnership",
+        "mechanics": [
+          "4% off first booking via website",
+          "8% off first booking via app",
+          "Up to RM 100 off"
+        ],
+        "voucher_mechanics": [
+          {
+            "code": "No code",
+            "description": "Auto-applied at checkout for first-time users"
+          }
+        ],
+        "products_focus": [
+          "Flights",
+          "Hotels",
+          "Activities"
+        ],
+        "campaign_url": "https://www.traveloka.com/en-my/promotions",
+        "promo": "First Time User Promo Code: Up to 8% off on first booking",
+        "detail": "Limited to first-time users, auto-applied at checkout",
+        "verified": true
+      }
+    ],
+    "partnership": [
+      {
+        "name": "Traveloka Referral Program",
+        "dates_start": "Ongoing",
+        "dates_end": "Ongoing",
+        "type": "partnership",
+        "mechanics": [
+          "Refer friends and get rewards",
+          "Up to RM 50 off on next booking"
+        ],
+        "voucher_mechanics": [
+          {
+            "code": "No code",
+            "description": "Auto-applied at checkout for referrals"
+          }
+        ],
+        "products_focus": [
+          "Flights",
+          "Hotels",
+          "Activities"
+        ],
+        "campaign_url": "https://www.traveloka.com/en-my/promotions",
+        "promo": "Referral Program: Up to RM 50 off on next booking",
+        "detail": "Limited to referrals, auto-applied at checkout",
+        "verified": true
+      }
+    ],
+    "flights": [
+      {
+        "name": "Flight HARGABAGUS!",
+        "dates_start": "Ongoing",
+        "dates_end": "Ongoing",
+        "type": "flights",
+        "mechanics": [
+          "Up to 50% off on flights",
+          "Exclusive discounts on AirAsia and Malaysia Airlines"
+        ],
+        "voucher_mechanics": [
+          {
+            "code": "No code",
+            "description": "Auto-applied at checkout"
+          }
+        ],
+        "products_focus": [
+          "Flights"
+        ],
+        "campaign_url": "https://www.traveloka.com/en-my/promotions/flights",
+        "promo": "Flight HARGABAGUS!: Up to 50% off on flights",
+        "detail": "Limited time offer, auto-applied at checkout",
+        "verified": true
+      }
+    ],
+    "hotels": [
+      {
+        "name": "Hotel Promotions",
+        "dates_start": "Ongoing",
+        "dates_end": "Ongoing",
+        "type": "hotels",
+        "mechanics": [
+          "Up to 50% off on hotels",
+          "Exclusive discounts on villas and resorts"
+        ],
+        "voucher_mechanics": [
+          {
+            "code": "No code",
+            "description": "Auto-applied at checkout"
+          }
+        ],
+        "products_focus": [
+          "Hotels",
+          "Villas",
+          "Resorts"
+        ],
+        "campaign_url": "https://www.traveloka.com/en-my/promotions/hotels",
+        "promo": "Hotel Promotions: Up to 50% off on hotels",
+        "detail": "Limited time offer, auto-applied at checkout",
+        "verified": true
+      }
+    ]
+  },
+  "tripcom": {
+    "destination": [
+      {
+        "name": "Super Lokal! Best Malaysia Travel & Hotel Deals on Trip.com",
+        "dates_start": "Ongoing",
+        "dates_end": "28 Jul 2026",
+        "type": "domestic",
+        "mechanics": [
+          "Recurring every Monday: up to RM50 OFF domestic return flights",
+          "Recurring every Thursday: up to RM30 OFF domestic hotel and flight bookings",
+          "10% OFF hotels and 20% OFF car rentals every Monday",
+          "RM30 OFF promo codes for domestic flights and hotels every Thursday"
+        ],
+        "voucher_mechanics": [
+          {
+            "code": "No code",
+            "description": "Auto-applied discounts on Mondays and Thursdays"
+          }
+        ],
+        "products_focus": [
+          "Flights",
+          "Hotels",
+          "Car Rental"
+        ],
+        "campaign_url": "https://www.trip.com/promotions/super-lokal",
+        "promo": "Up to RM50 OFF domestic return flights, up to RM30 OFF domestic hotel and flight bookings, 10% OFF hotels, 20% OFF car rentals",
+        "detail": "Exclusive discounts on Malaysia hotels, cheap flights, and car rentals every week",
+        "verified": true
+      },
+      {
+        "name": "Taste of China",
+        "dates_start": "Ongoing",
+        "dates_end": "Ongoing",
+        "type": "destination",
+        "mechanics": [
+          "Buy 1 Get 1 Free on China attraction tickets",
+          "Exclusive codes for China attractions and hotels"
+        ],
+        "voucher_mechanics": [
+          {
+            "code": "UOB Visa Buy 1 Free 1",
+            "description": "Buy 1 Get 1 Free on China attraction tickets with UOB Visa cards"
+          }
+        ],
+        "products_focus": [
+          "Attractions",
+          "Hotels"
+        ],
+        "campaign_url": "https://www.trip.com/promotions/taste-of-china",
+        "promo": "Buy 1 Get 1 Free on China attraction tickets, exclusive codes for China attractions and hotels",
+        "detail": "Exclusive deals on China attractions and hotels",
+        "verified": true
+      }
+    ],
+    "partnership": [
+      {
+        "name": "UOB Visa Cards Exclusive",
+        "dates_start": "Ongoing",
+        "dates_end": "Ongoing",
+        "type": "partnership",
+        "mechanics": [
+          "Buy 1 Get 1 Free on China attraction tickets with UOB Visa cards"
+        ],
+        "voucher_mechanics": [
+          {
+            "code": "UOB Visa Buy 1 Free 1",
+            "description": "Buy 1 Get 1 Free on China attraction tickets with UOB Visa cards"
+          }
+        ],
+        "products_focus": [
+          "Attractions"
+        ],
+        "campaign_url": "https://www.trip.com/promotions/uob-visa-cards-exclusive",
+        "promo": "Buy 1 Get 1 Free on China attraction tickets with UOB Visa cards",
+        "detail": "Exclusive deal for UOB Visa cardholders",
+        "verified": true
+      }
+    ],
+    "flights": [
+      {
+        "name": "Trip.com Flight Promotion",
+        "dates_start": "26 Jun 2026",
+        "dates_end": "1 Jul 2027",
+        "type": "flights",
+        "mechanics": [
+          "Extra 10% OFF flights from 26 Jun 2026 to 2 Jul 2026",
+          "Up to 20% OFF flights to Vietnam",
+          "Up to 50% OFF hotels in Vietnam"
+        ],
+        "voucher_mechanics": [
+          {
+            "code": "No code",
+            "description": "Auto-applied discounts on flights and hotels"
+          }
+        ],
+        "products_focus": [
+          "Flights",
+          "Hotels"
+        ],
+        "campaign_url": "https://www.trip.com/promotions/flight-promotion",
+        "promo": "Extra 10% OFF flights, up to 20% OFF flights to Vietnam, up to 50% OFF hotels in Vietnam",
+        "detail": "Exclusive deals on flights and hotels",
+        "verified": true
+      }
+    ]
+  },
+  "kkday": {
+    "destination": [],
+    "partnership": [],
+    "flights": []
+  },
+  "calendar": [
+    {
+      "day": "Mon",
+      "tv": "50% off flights",
+      "tv_type": "flash",
+      "tr": null,
+      "kk": null
+    },
+    {
+      "day": "Tue",
+      "tv": "50% off flights",
+      "tv_type": "flash",
+      "tr": null,
+      "kk": null
+    },
+    {
+      "day": "Wed",
+      "tv": "50% off flights",
+      "tv_type": "flash",
+      "tr": null,
+      "kk": null
+    },
+    {
+      "day": "Thu",
+      "tv": "25% off hotels & attractions",
+      "tv_type": "destination",
+      "tr": null,
+      "kk": null
+    },
+    {
+      "day": "Fri",
+      "tv": "25% off hotels & attractions",
+      "tv_type": "destination",
+      "tr": null,
+      "kk": null
+    },
+    {
+      "day": "Sat",
+      "tv": "25% off hotels & attractions",
+      "tv_type": "destination",
+      "tr": null,
+      "kk": null
+    },
+    {
+      "day": "Sun",
+      "tv": "25% off hotels & attractions",
+      "tv_type": "destination",
+      "tr": null,
+      "kk": null
+    }
+  ],
+  "insights": [
+    "Traveloka runs flash deals 7/7 days — strongest daily cadence of any competitor",
+    "Trip.com GO CHINA fires every Tuesday 12PM — recurring weekly MY→CN demand window",
+    "KKday triple-stacks Japan: NY2JP5 + weekly Aichi 50% + Mid-Year 80% sale",
+    "KKday reaches 28M+ MY users via Grab (14M) + TnG (14M) at zero cost",
+    "FIFA World Cup live 11 Jun — KKday only competitor with host-city experience packages"
+  ],
+  "calendar_note": "Traveloka 7/7 · Trip.com 0/7 · KKday 0/7"
+}
