@@ -39,6 +39,11 @@ jobs:
         run: |
           git config --global user.name "Competitor Monitor Bot"
           git config --global user.email "bot@users.noreply.github.com"
-          git add website/data.json
-          git commit -m "Update competitor data — $(date -u +'%Y-%m-%d')" || echo "No changes"
-          git push
+          # Stage the dashboard data wherever it lives (root or website/), ignore if absent
+          git add website/data.json data.json 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No data.json changes to commit"
+          else
+            git commit -m "Update competitor data — $(date -u +'%Y-%m-%d')"
+            git push
+          fi
