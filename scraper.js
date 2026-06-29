@@ -45,7 +45,7 @@ const CONFIG = {
       ],
       label: "KKday",
       useJina: true,
-      staticFallback: "data/kkday.json",
+      staticFile: "data/kkday.json",
     },
   },
 };
@@ -115,7 +115,7 @@ async function fetchPage(url) {
   const $    = cheerio.load(html);
   $("script,style,noscript,nav,footer,header,iframe,svg").remove();
   $("[class*='cookie'],[class*='popup'],[class*='modal'],[id*='cookie']").remove();
-  return $("body").text().replace(/\s+/g, " ").trim().slice(0, 5000);
+  return $("body").text().replace(/\s+/g, " ").trim().slice(0, 10000);
 }
 
 // ─── Jina AI Reader (handles JS-rendered SPAs like KKday) ───────────────────
@@ -133,7 +133,7 @@ async function fetchWithJina(url) {
   });
   if (!res.ok) throw new Error(`Jina ${res.status}`);
   const text = await res.text();
-  return text.slice(0, 5000);
+  return text.slice(0, 12000);
 }
 
 // ─── Groq ─────────────────────────────────────────────────────────────────────
@@ -161,9 +161,10 @@ async function scrapeCompetitor(name, cfg) {
     catch(e) { console.warn(`    ⚠ ${url}: ${e.message}`); }
     if (cfg.useJina) await sleep(1000);
   }
-  const text = pages.join("\n\n---\n\n").slice(0, 8000);
+  const text = pages.join("\n\n---\n\n").slice(0, 14000);
   if (!text.trim()) {
     console.warn(`  ⚠ No content for ${name}`);
+    if (cfg.staticFile) return loadStaticFallback(name, cfg.staticFile);
     return { destination: [], partnership: [], flights: [] };
   }
 
@@ -209,12 +210,17 @@ Rules:
   try {
     const result = parseJSON(await callGroq(prompt));
     const total  = (result.destination?.length||0)+(result.partnership?.length||0)+(result.flights?.length||0);
-    if (total === 0 && cfg.staticFallback) return loadStaticFallback(name, cfg.staticFallback);
+    if (total === 0 && cfg.staticFile) {
+      console.warn(`  ⚠ ${name} parsed 0 campaigns — using static fallback`);
+      return loadStaticFallback(name, cfg.staticFile);
+    }
+    if (total === 0 && cfg.useJina) { console.warn(`  ⚠ Jina got 0 campaigns for ${name}, check URL`);
+    }
     console.log(`  ✓ ${name}: ${total} campaigns`);
     return result;
   } catch(e) {
     console.error(`  ✗ ${name}: ${e.message}`);
-    if (cfg.staticFallback) return loadStaticFallback(name, cfg.staticFallback);
+    if (cfg.staticFile) return loadStaticFallback(name, cfg.staticFile);
     return { destination: [], partnership: [], flights: [] };
   }
 }
@@ -287,9 +293,19 @@ async function writeToSheets(rows, tabName) {
     body:    JSON.stringify({ action: "append_rows", tab: tabName, rows }),
     signal:  AbortSignal.timeout(30000),
   });
-  if (!res.ok) throw new Error(`Sheets webhook ${res.status}`);
-  const result = await res.json();
-  console.log(`  ✓ Sheets: ${result.rowsAdded} rows added to "${tabName}"`);
+  if (!res.ok) throw new Error(`Sheets webhook HTTP ${res.status}`);
+
+  // Apps Script returns an HTML login page (starts with "<!DOCTYPE") when the
+  // deployment access is wrong. Detect that explicitly instead of letting
+  // res.json() throw an opaque "Unexpected token '<'" error.
+  const raw = await res.text();
+  if (raw.trim().startsWith("<")) {
+    throw new Error("Apps Script returned HTML, not JSON — set deployment access to \"Anyone\" and update SHEETS_WEBAPP_URL");
+  }
+  let result;
+  try { result = JSON.parse(raw); }
+  catch { throw new Error(`Sheets webhook returned non-JSON: ${raw.slice(0, 80)}`); }
+  console.log(`  ✓ Sheets: ${result.rowsAdded ?? "?"} rows added to "${tabName}"`);
 }
 
 // ─── Monthly analysis ─────────────────────────────────────────────────────────
@@ -555,6 +571,21 @@ async function sendEmail(html, subject) {
   console.log(`  ✓ Email → ${CONFIG.recipient}`);
 }
 
+// ─── Step isolation helper ────────────────────────────────────────────────────
+// Runs a step, catches any error, records it, and returns a fallback instead of
+// crashing the whole run. This guarantees the Lark report still sends even if
+// Sheets / email / a single scrape fails.
+const FAILURES = [];
+async function step(label, fn, fallback = null) {
+  try {
+    return await fn();
+  } catch (e) {
+    console.error(`  ✗ ${label} failed: ${e.message}`);
+    FAILURES.push(`${label}: ${e.message}`);
+    return fallback;
+  }
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 async function main() {
   const weekLabel  = getWeekLabel();
@@ -566,50 +597,79 @@ async function main() {
   console.log(`\n🚀 Competitor Monitor — ${weekLabel}`);
   console.log(`   Monthly run: ${isMonthly ? "YES — will generate monthly analysis" : "No"}\n`);
 
-  // 1. Scrape
+  // 1. Scrape — each competitor isolated so one failure can't sink the others
   console.log("Step 1 — Scraping");
-  const traveloka = await scrapeCompetitor("traveloka", CONFIG.competitors.traveloka);
-  await sleep(20000);
-  const tripcom = await scrapeCompetitor("tripcom", CONFIG.competitors.tripcom);
-  await sleep(20000);
-  const kkday = await scrapeCompetitor("kkday", CONFIG.competitors.kkday);
-  await sleep(10000);
+  const [traveloka, tripcom, kkday] = await Promise.all([
+    step("scrape traveloka", () => scrapeCompetitor("traveloka", CONFIG.competitors.traveloka),
+         { destination: [], partnership: [], flights: [] }),
+    step("scrape tripcom",   () => scrapeCompetitor("tripcom",   CONFIG.competitors.tripcom),
+         { destination: [], partnership: [], flights: [] }),
+    step("scrape kkday",     () => scrapeCompetitor("kkday",     CONFIG.competitors.kkday),
+         { destination: [], partnership: [], flights: [] }),
+  ]);
   const allData = { traveloka, tripcom, kkday };
 
-  // 2. Insights
+  const tvCount = (traveloka.destination?.length||0)+(traveloka.partnership?.length||0)+(traveloka.flights?.length||0);
+  const tpCount = (tripcom.destination?.length||0)+(tripcom.partnership?.length||0)+(tripcom.flights?.length||0);
+  const kkCount = (kkday.destination?.length||0)+(kkday.partnership?.length||0)+(kkday.flights?.length||0);
+  console.log(`  → Totals: Traveloka ${tvCount} · Trip.com ${tpCount} · KKday ${kkCount}`);
+
+  // 2. Insights (non-fatal)
   console.log("\nStep 2 — Key insights");
-  const insights = await generateInsights(allData, weekLabel);
+  const insights = await step("insights", () => generateInsights(allData, weekLabel), []);
 
-  // 3. Calendar
-  const { calendar, calendar_note } = buildCalendar(allData);
+  // 3. Calendar (pure function, but isolate anyway)
+  const { calendar, calendar_note } = await step("calendar",
+    async () => buildCalendar(allData), { calendar: {}, calendar_note: "" });
 
-  // 4. Sheets
-  console.log(`\nStep 3 — Google Sheets (tab: "${monthTab}")`);
-  const sheetRows = buildSheetRows(allData, weekLabel);
-  await writeToSheets(sheetRows, monthTab);
+  // 4. Build data.json (needed for email; non-fatal)
+  const data = await step("build data.json",
+    async () => saveDataJSON(allData, calendar, calendar_note, insights, weekLabel), null);
 
-  // 5. Save data.json
-  console.log("\nStep 4 — Save website/data.json");
-  const data = saveDataJSON(allData, calendar, calendar_note, insights, weekLabel);
-
-  // 6. Weekly Lark + Email
-  console.log("\nStep 5 — Weekly Lark + Email");
+  // 5. CRITICAL: Weekly Lark report sends FIRST, before anything that can fail.
+  console.log("\nStep 3 — Weekly Lark report (critical)");
   const weeklyLark = buildWeeklyLarkMessage(allData, weekLabel, insights, calendar_note);
-  await sendToLark(weeklyLark);
-  const weeklyEmail = buildWeeklyEmailHTML(data, weekLabel);
-  await sendEmail(weeklyEmail, `🔍 Competitor Monitor — ${weekLabel} | Traveloka · Trip.com · KKday`);
+  const larkOk = await step("Lark send", async () => { await sendToLark(weeklyLark); return true; }, false);
 
-  // 7. Monthly analysis (first Monday of month only)
+  // 6. Email (non-fatal)
+  console.log("\nStep 4 — Email");
+  if (data) {
+    const weeklyEmail = buildWeeklyEmailHTML(data, weekLabel);
+    await step("email send",
+      () => sendEmail(weeklyEmail, `🔍 Competitor Monitor — ${weekLabel} | Traveloka · Trip.com · KKday`));
+  }
+
+  // 7. Sheets LAST — it's the most failure-prone, so it can no longer block the report
+  console.log(`\nStep 5 — Google Sheets (tab: "${monthTab}")`);
+  const sheetRows = buildSheetRows(allData, weekLabel);
+  await step("sheets write", () => writeToSheets(sheetRows, monthTab));
+
+  // 8. Monthly analysis (first Monday only; non-fatal)
   if (isMonthly) {
     console.log(`\nStep 6 — Monthly analysis (${monthLabel})`);
     await sleep(2000);
-    const monthly = await generateMonthlyAnalysis(allData, monthLabel);
-    await sendToLark(monthly.lark_message);
-    const monthlyEmail = buildMonthlyEmailHTML(monthly.lark_message, monthLabel);
-    await sendEmail(monthlyEmail, monthly.email_subject);
+    await step("monthly analysis", async () => {
+      const monthly = await generateMonthlyAnalysis(allData, monthLabel);
+      await sendToLark(monthly.lark_message);
+      const monthlyEmail = buildMonthlyEmailHTML(monthly.lark_message, monthLabel);
+      await sendEmail(monthlyEmail, monthly.email_subject);
+    });
   }
 
-  console.log(`\n✅ Done in ${((Date.now()-t0)/1000).toFixed(1)}s — ${weekLabel}\n`);
+  // 9. Summary — surface partial failures without failing the whole run
+  const secs = ((Date.now()-t0)/1000).toFixed(1);
+  if (FAILURES.length) {
+    console.log(`\n⚠ Completed in ${secs}s with ${FAILURES.length} non-fatal issue(s):`);
+    FAILURES.forEach(f => console.log(`   • ${f}`));
+  } else {
+    console.log(`\n✅ Done in ${secs}s — ${weekLabel}\n`);
+  }
+
+  // Only hard-fail the GitHub Action if the critical Lark report itself didn't send.
+  if (!larkOk) {
+    console.error("\n❌ Critical: weekly Lark report did not send.");
+    process.exit(1);
+  }
 }
 
-main().catch((e) => { console.error("\n❌", e.message); process.exit(1); });
+main().catch((e) => { console.error("\n❌ Fatal:", e.message); process.exit(1); });
