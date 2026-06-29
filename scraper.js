@@ -451,7 +451,9 @@ function saveDataJSON(allData, calendar, calNote, insights, weekLabel) {
     traveloka: allData.traveloka, tripcom: allData.tripcom, kkday: allData.kkday,
     calendar, insights, calendar_note: calNote,
   };
-  const p = path.join(__dirname, "website", "data.json");
+  const dir = path.join(__dirname, "website");
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  const p = path.join(dir, "data.json");
   fs.writeFileSync(p, JSON.stringify(out, null, 2));
   console.log(`  ✓ website/data.json saved (${Math.round(fs.statSync(p).size/1024)}KB)`);
   return out;
